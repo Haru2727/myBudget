@@ -27,3 +27,18 @@ self.addEventListener("install", function (e) {
         self.skipWaiting();
 })
 
+self.addEventListener("activate", function (e) {
+    e.waitUntil(
+        caches.keys().then(keyList => {
+            return Promise.all(
+                keyList.map(key => {
+                    if (key !== CACHE_NAME && key !== DATA_CACHE_NAME) {
+                        console.log("Clearing the old cache data", key);
+                        return caches.delete(key);
+                    }
+                })
+            );
+        })
+    );
+    self.clients.claim();
+})
