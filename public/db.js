@@ -3,6 +3,8 @@
 // then need to save the record and and check the database for it once
 // it is reopened.  If it isnt there it should add or create it to the DB
 
+const { response } = require("express");
+
 // also need a manifest.webmanifest alond with a service-worker.js this will allow for the files to 
 // be cached and kept offline when need be
 let db;
@@ -46,5 +48,28 @@ function checkDB() {
     // get all records from store and set to a variable
     const getAll = store.getAll();
 
-    
-}
+    getAll.onsucess = function () {
+        if (getAll.result.length > 0) {
+            fetch('/api/transaction/bulk', {
+                method: "POST",
+                body: JSON.stringify(getAll.result),
+                headers: {
+                    Accept: "application/json, text/plain, */*",
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(response => response.json())
+            .then(() => {
+                // if successful, open a transaction on your pending db
+                const transaction = db.transaction(["pending"], "readwrite");
+                // access your pending object store
+                const store = transaction.objectStore("pending");
+                // clear all items in your store
+                store.clear();
+                console.log('Clearing store 🧹');
+            });
+        };
+    };
+};
+// listen for app coming back online
+window.addEventListener("online", checkDB);
