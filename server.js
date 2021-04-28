@@ -5,7 +5,7 @@ const compression = require("compression");
 const uri = process.env.MONGODB_URI;
 
 
-const PORT = 3200;
+const PORT = process.env.PORT || 3001;
 
 const app = express();
 
